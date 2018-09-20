@@ -19,7 +19,8 @@ mastodon = Mastodon(
 )
 
 mastodon.log_in(
-#    'username', 
+#    'username',  
+#    'password',
     to_file = "user.secret"
     )
 
@@ -29,4 +30,4 @@ mastodon = Mastodon(
     api_base_url = instance_url
 )
 
-#mastodon.toot("hello world")
+mastodon.toot("Connected")
