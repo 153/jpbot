@@ -3,12 +3,15 @@ from mastodon import Mastodon
 
 instance_url = "https://plero.ma"
 
-## Run once, then comment out.
-# Mastodon.create_app(
-#     'my',
-#     api_base_url = instance_url
-#     to_file = "client.secret"
-# )
+with open('client.secret', 'r') as clients:
+    clients = clients.read()
+if len(clients) < 5:
+    ## Only needs to be ran once
+    Mastodon.create_app(
+        'myapp',
+        api_base_url = instance_url,
+        to_file = "client.secret"
+    )
 
 mastodon = Mastodon(
     client_id = "client.secret",
@@ -16,8 +19,7 @@ mastodon = Mastodon(
 )
 
 mastodon.log_in(
-    'jp', #ignoreline
-    'Pnw6d34ByHIFWAeV3C0p', #ignoreline
+#    'username', 
     to_file = "user.secret"
     )
 
