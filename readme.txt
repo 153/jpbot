@@ -12,7 +12,7 @@ posts a message to the Mastodon account you configured in
 masto.py. 
 
 
-pip3 install Mastodon
+pip3 install Mastodon.py
 nano masto.py
 nano bot.py
 chmod +x masto.py
