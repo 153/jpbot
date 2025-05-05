@@ -6,12 +6,16 @@ import justirc
 import requests
 import re
 
-server = "irc.sageru.org"
-channel = "#jp"
-nick = "Anonymous"
-user = "anon"
+server = ""
+channel = ""
+nick = ""
+user = ""
 log = "log.txt"
 time_s = "%Y%m%d-%H%M%s"
+
+twitter_url = ""
+
+notif_check = 0
 
 bot = justirc.IRCConnection()
 
@@ -27,21 +31,42 @@ def on_welcome(bot):
     print("Joined", channel)
 
 def on_message(bot, channel, sender, message):
+    check_mentions(bot, channel)
+    
     if message.split()[0] == "!tweet":
         if len(message) < 7:
-#            bot.send_message(channel, "Tweets to @jp@plero.ma")
-            bot.send_message(channel, "Twitter bot")
+            bot.send_message(channel, f"Tweets to {twitter_url}")
         else:
             message = message[7:]
             print(message)
             with open(log, "a") as log_it:
                 log_it.write(str(" ".join([get_time(), message+"\n"])))
-            masto.mastodon.toot(message)
-            bot.send_message(channel, "It has been tweeted.")
+            if "http" or "#" in message:
+                masto.mastodon.status_post(visibility="unlisted", status=message)
+            else:
+                masto.mastodon.status_post(visibility="public", status=message)
+            bot.send_message(channel, f"It has been tweeted. {twitter_url}")
 
+def check_mentions(bot, channel):
+    global notif_check
+    now = int(time.time())
+    if (now - notif_check) > 30:
+        notif_check = now
+        new_ats = masto.mastodon.notifications(mentions_only=True)
+        for a in new_ats:
+            sender = "@" + a["status"]["account"]["acct"]
+            msg = a["status"]["pleroma"]["content"]["text/plain"]
+            msg = ": ".join([sender, msg])
+            bot.send_message(channel, msg)
+        masto.mastodon.notifications_clear()
+            
 bot.on_connect.append(on_connect)
 bot.on_welcome.append(on_welcome)
 bot.on_public_message.append(on_message)
+
+masto.mastodon.notifications_clear()
+notif_check = int(time.time())
+
 
 bot.connect(server)
 bot.run_loop()
